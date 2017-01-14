@@ -78,23 +78,14 @@ io.on('connection', function(socket){
   //Server receive 'chat message'-Event from a user
   socket.on('chat message', function(data) {
     let user = users[socket.id];
-    console.log('[' + user.room.name + '] message: ' + data.message + ' from ' + data.username);
-    io.to(user.room.name).emit('chat message', {time: new Date(), message: data.message, name: data.username || 'Anonym'  });
-  });
-
-  socket.on("createRoom", function(username, newRoom, oldRoom) {
-    rooms.push(room);
-
-    users[socket.id].room = newRoom;
-    console.log('User ' + username + ' created the Room "' + newRoom+ '".');
-
-
+    console.log('[' + user.room.name + '] message: ' + data.message + ' from ' + user.username);
+    io.to(user.room.name).emit('chat message', {time: new Date(), message: data.message, name: user.username || 'Anonym'  });
   });
 
   //Each socket also fires a special disconnect event
-  socket.on('disconnect', function(){
+  socket.on('disconnect', function(data){
     //TODO: Welcher User verlässt den chat?
-    console.log('user disconnected');
+    console.log('user disconnected', data);
     io.emit('logout message');
   });
 

@@ -34,11 +34,10 @@ socket.on('login', function(person, chats){
 // User sends a message to the server, which get this as an "chat message"-Event
 $('#chatform').submit(function(){
   let msg = $('#message').val();
-  let user = $('#username').val();
 
   if (msg)
   {
-    socket.emit('chat message', {time: new Date(), message: msg, username: user});
+    socket.emit('chat message', {message: msg});
     $('#message').val('');
   }
   return false;
@@ -46,10 +45,10 @@ $('#chatform').submit(function(){
 
 //Receive the messages from the Server
 socket.on('chat message', function(data){
-  var time = new Date(data.time);
-  var hours = time.getHours() < 10 ? '0' + time.getHours() : time.getHours();
-  var minutes = time.getMinutes() < 10 ? '0' + time.getMinutes() : time.getMinutes();
-  var newMessage = $('<li>').innerHTML = '[ '+ hours + ':' + minutes + '] <b>' + data.name + ': </b>' + data.message + '<br />';
+  let time = new Date(data.time);
+  let hours = time.getHours() < 10 ? '0' + time.getHours() : time.getHours();
+  let minutes = time.getMinutes() < 10 ? '0' + time.getMinutes() : time.getMinutes();
+  let newMessage = $('<li>').innerHTML = '[ '+ hours + ':' + minutes + '] <b>' + data.name + ': </b>' + data.message + '<br />';
 
   $('#messages').append(
     newMessage
@@ -62,15 +61,14 @@ socket.on('chat message', function(data){
 //Neuen Raum erstellen und betreten
 $('form#room-form').submit(function() {
   var room = $('#room').val();
-  var username = $('#nickname').val();
 
   if(room)
   {
     socket.emit('changeRoom', room);
     $('#room').val('');
   }
-
   return false;
+
 });
 
 socket.on('changeRoom', function(person, chats){

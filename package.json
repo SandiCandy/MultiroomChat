@@ -1,0 +1,19 @@
+{
+  "name": "node_socket_projo",
+  "version": "0.0.1",
+  "description": "superchat",
+  "main": "app.js",
+  "dependencies": {
+    "bootstrap": "^3.3.7",
+    "express": "^4.14.0",
+    "mongoose": "latest",
+    "morgan": "latest",
+    "socket.io": "^1.6.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Sandra Tieben",
+  "license": "ISC"
+}

@@ -1,0 +1,84 @@
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html, body {
+	height: 100%;
+}
+
+body{
+	margin: 0;
+	padding: 0;
+	font: 16px "Helvetica neue", Helvetica, Arial, sans-serif;
+	color: #333;
+}
+header, footer{
+	display: block;
+	position: fixed;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: auto;
+	padding: 0 0.5em;
+	background-color: #8BC84B;
+	font-size: 24px;
+	line-height: 2em;
+	height: 2em;
+	color: #fff;
+}
+header{
+	font-weight: bold;
+}
+header > a:last-child{
+	float: right;
+	color: #fff;
+	font-weight: normal;
+}
+footer{
+	top: auto;
+	bottom: 0;
+}
+
+form#chatform, form#fileform {
+	background: #000;
+	padding: 3px;
+	position: fixed;
+	width: 100%;
+	font-size: 14px;
+}
+
+form#chatform {
+	bottom: 0px;
+}
+
+form#fileform {
+	bottom: 0;
+}
+
+/*form button { width: 9%; background: rgb(130, 224, 255); border: none; padding: 10px; }*/
+
+
+#messages {
+	margin: 48px 0.5em;
+	list-style: none;
+}
+
+#messages li { padding: 5px 10px; }
+
+#loginscreen {
+	height: 100%;
+	text-align: center;
+	padding-top: 100px;
+}
+
+#loginscreen input {
+	height: 2em;
+	font-size: 32px;
+	border-color: grey;
+	padding-left: 20px;
+}
+
+#sidebar {
+	position: fixed;
+	width: 20%;
+	top: 2rem;
+	right: 1rem;
+}

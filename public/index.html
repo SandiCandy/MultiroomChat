@@ -1,0 +1,52 @@
+<!DOCTYPE HTML>
+<html>
+  <head>
+    <title>Node.js/Socket.io Chat</title>
+    <!--script src="jquery.min.js"></script-->
+    <script src="http://code.jquery.com/jquery-1.11.1.js"></script>
+    <!-- Das neueste kompilierte und minimierte CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+
+    <!-- Optionales Theme -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap-theme.min.css">
+
+    <!-- Das neueste kompilierte und minimierte JavaScript -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script><meta charset="utf-8">
+
+    <link rel="stylesheet" href="style.css" />
+    <script src="/socket.io/socket.io.js"></script>
+
+  </head>
+  <body>
+    <!-- Loginscreen -->
+    <div id="loginscreen">
+      <form action="" class="form-group">
+        <input id="nickname" type="text" placeholder="Dein Name" />
+        <input id="send" class="hidden" type="submit" value="send" />
+      </form>
+    </div>
+    <!-- Loginscreen Ende -->
+
+    <!-- Chatbereich -->
+    <div id="chat" class="hidden">
+      <ul id="messages"></ul>
+      <form action="" id="chatform" class="form-inline">
+        <input id="username" type="text" placeholder="Dein Name" disabled/>
+        <input id="message" autocomplete="off" placeholder="Deine Nachricht..."/>
+        <input id="send" type="submit" value="send" />
+      </form>
+    </div> <!-- Chatbereich Ende -->
+
+    <div id="sidebar" class="hidden">
+      <ul id="rooms"></ul>
+      <form id="room-form" action="" class="form-group">
+        <input id="room" type="text" placeholder"Neuen Raum eröffnen..."/>
+        <input id="send" type="submit" value="+" />
+      </form>
+    </div>
+
+
+
+    <script src="client.js"></script>
+  </body>
+</html>

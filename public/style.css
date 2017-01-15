@@ -32,10 +32,12 @@ header > a:last-child{
 	color: #fff;
 	font-weight: normal;
 }
-
+#chat {
+	height: 100%;
+}
 
 #footer{
-	height: 60px;
+	height: 16%;
   width: 100%;
   background: #000;
   position: fixed;
@@ -70,6 +72,7 @@ input[type=file] {
 #messages {
 	margin: 48px 0.5em;
 	list-style: none;
+	margin-bottom: 20%;
 }
 
 #messages li { padding: 5px 10px; }

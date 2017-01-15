@@ -1,4 +1,5 @@
 "use strict"
+
 <!-- Connect -->
 var socket = io();
 
@@ -14,7 +15,6 @@ $('#loginscreen form').submit(function(){
 
 socket.on('login', function(person, chats){
   //console.log('login', person);
-  //sessionStorage.setItem('Room', JSON.stringify(person.room));
   if(!$('#loginscreen').hasClass('hidden')) {
     $('#loginscreen').addClass('hidden');
     $('#chat').removeClass('hidden');
@@ -61,9 +61,8 @@ socket.on('chat message', function(data){
 function dataReader(evt) {
     var files = evt.target.files; // FileList object
 
-    // Auslesen der gespeicherten Dateien durch Schleife
+    // ForSchleife, da mehrere Bilder hochgeladen werden können
     for (let i = 0, f; f = files[i]; i++) {
-
       // nur Bild-Dateien
       if (!f.type.match('image.*')) {
         continue;
@@ -76,7 +75,7 @@ function dataReader(evt) {
           // Preview for Client
           var preview = document.createElement('img');
     		  preview.className = 'preview';
-    		  preview.src   = e.target.result;
+    		  preview.src = e.target.result;
     		  preview.title = theFile.name;
           document.getElementById('list').insertBefore(preview, null);
           socket.emit('user image', e.target.result);
@@ -86,21 +85,13 @@ function dataReader(evt) {
       // Bilder als Data URL auslesen.
       reader.readAsDataURL(f);
     }
-  }
-  // Auf neue Auswahl reagieren und gegebenenfalls Funktion dateiauswahl neu ausführen.
-  document.getElementById('files').addEventListener('change', dataReader, false);
 
-$('#fileform').submit(function(){
-  let img = $('#image').val();
+    $('output#list').empty();
+}
 
-  if (img)
-  {
+// Auf neue Auswahl reagieren und gegebenenfalls Funktion dataReader neu ausführen.
+document.getElementById('files').addEventListener('change', dataReader, false);
 
-    socket.emit('file upload', img);
-    $('#message').val('');
-  }
-  return false;
-});
 
 socket.on('user image', function(data){
   let time = new Date(data.time);

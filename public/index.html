@@ -30,14 +30,21 @@
     <!-- Chatbereich -->
     <div id="chat" class="hidden">
       <ul id="messages"></ul>
-      <form action="" id="chatform" class="form-inline">
-        <input id="username" type="text" placeholder="Dein Name" disabled/>
-        <input id="message" autocomplete="off" placeholder="Deine Nachricht..."/>
-        <input id="send" type="submit" value="send" />
-      </form>
+      <div id="footer">
+        <form action="" id="chatform" class="form-inline">
+          <input id="username" type="text" placeholder="Dein Name" disabled/>
+          <input id="message" autocomplete="off" placeholder="Deine Nachricht..."/>
+          <input id="send" type="submit" value="send" />
+        </form>
+        <form action="" id="fileform" class="form-group">
+          <input id="files" type="file" accept="image/*" name="files[]" multiple />
+          <input id="send" type="submit" value="+" />
+          <output id="list"></output>
+        </form>
     </div> <!-- Chatbereich Ende -->
 
     <div id="sidebar" class="hidden">
+      <ul id="userlist"></ul>
       <ul id="rooms"></ul>
       <form id="room-form" action="" class="form-group">
         <input id="room" type="text" placeholder"Neuen Raum eröffnen..."/>

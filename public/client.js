@@ -13,9 +13,8 @@ $('#loginscreen form').submit(function(){
 });
 
 socket.on('login', function(person, chats){
-  console.log('loginblabla', person);
-  sessionStorage.setItem('Room', JSON.stringify(person.room));
-  //sessionStorage.setItem('User', JSON.stringify(person));
+  //console.log('login', person);
+  //sessionStorage.setItem('Room', JSON.stringify(person.room));
   if(!$('#loginscreen').hasClass('hidden')) {
     $('#loginscreen').addClass('hidden');
     $('#chat').removeClass('hidden');
@@ -48,7 +47,7 @@ socket.on('chat message', function(data){
   let time = new Date(data.time);
   let hours = time.getHours() < 10 ? '0' + time.getHours() : time.getHours();
   let minutes = time.getMinutes() < 10 ? '0' + time.getMinutes() : time.getMinutes();
-  let newMessage = $('<li>').innerHTML = '[ '+ hours + ':' + minutes + '] <b>' + data.name + ': </b>' + data.message + '<br />';
+  let newMessage = $('<li>').innerHTML = '['+ hours + ':' + minutes + '] <b>' + data.name + ': </b>' + data.message + '<br />';
 
   $('#messages').append(
     newMessage
@@ -56,6 +55,62 @@ socket.on('chat message', function(data){
 
   // Scroll down
   $('body').scrollTop($('body')[0].scrollHeight);
+});
+
+// User sends a picture to the server, which get this as an "chat message"-Event
+function dataReader(evt) {
+    var files = evt.target.files; // FileList object
+
+    // Auslesen der gespeicherten Dateien durch Schleife
+    for (let i = 0, f; f = files[i]; i++) {
+
+      // nur Bild-Dateien
+      if (!f.type.match('image.*')) {
+        continue;
+      }
+
+      var reader = new FileReader();
+
+      reader.onload = (function(theFile) {
+        return function(e) {
+          // Preview for Client
+          var preview = document.createElement('img');
+    		  preview.className = 'preview';
+    		  preview.src   = e.target.result;
+    		  preview.title = theFile.name;
+          document.getElementById('list').insertBefore(preview, null);
+          socket.emit('user image', e.target.result);
+        };
+      })(f);
+
+      // Bilder als Data URL auslesen.
+      reader.readAsDataURL(f);
+    }
+  }
+  // Auf neue Auswahl reagieren und gegebenenfalls Funktion dateiauswahl neu ausführen.
+  document.getElementById('files').addEventListener('change', dataReader, false);
+
+$('#fileform').submit(function(){
+  let img = $('#image').val();
+
+  if (img)
+  {
+
+    socket.emit('file upload', img);
+    $('#message').val('');
+  }
+  return false;
+});
+
+socket.on('user image', function(data){
+  let time = new Date(data.time);
+  let hours = time.getHours() < 10 ? '0' + time.getHours() : time.getHours();
+  let minutes = time.getMinutes() < 10 ? '0' + time.getMinutes() : time.getMinutes();
+
+  $('#messages')
+    .append($('<li>').text('[ ' + hours + ':' + minutes + '] ')
+      .append($('<b>').text(data.name),
+        '<img class="chat-image" src="' + data.message + '"/>'));
 });
 
 //Neuen Raum erstellen und betreten
@@ -73,7 +128,6 @@ $('form#room-form').submit(function() {
 
 socket.on('changeRoom', function(person, chats){
   console.log('User ' + person.username + ' changed to room ' + person.room.name + '!');
-  sessionStorage.setItem('Room', JSON.stringify(person.room));
 
   var msg = 'User ' + person.username + ' hat den Chat ' + person.room.name + ' betreten.'
   $('#messages').append($('<li>').text(msg));

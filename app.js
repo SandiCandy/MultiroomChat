@@ -44,6 +44,7 @@ io.on('connection', function(socket){
 
     socket.join(defaultRoom.name);
     io.to(defaultRoom.name).emit('login', newPerson, rooms);
+
   });
 
   socket.on('changeRoom', function(roomname) {
@@ -61,7 +62,7 @@ io.on('connection', function(socket){
       console.log('Room "' + roomname + '" created!')
     }
 
-    io.to(users[sid].room.name).emit('chat message', {time: new Date(), message: users[sid].username +' hat den Raum verlassen.', name: 'INFO'  });
+    io.to(users[sid].room.name).emit('chat message', {time: new Date(), message: users[sid].username +' ist in den Raum "' + roomname + '" gewechselt.', name: 'INFO'  });
 
     socket.leave(users[sid].room.name);
     for(let i=0; i<rooms.length; ++i) {
@@ -72,6 +73,9 @@ io.on('connection', function(socket){
     socket.join(users[sid].room.name);
     io.to(roomname).emit('changeRoom', users[sid], rooms);
 
+    // let clients = io.sockets.clients(defaultRoom.name);
+    // console.log("The Clients", clients);
+
   });
 
 
@@ -81,6 +85,13 @@ io.on('connection', function(socket){
     console.log('[' + user.room.name + '] message: ' + data.message + ' from ' + user.username);
     io.to(user.room.name).emit('chat message', {time: new Date(), message: data.message, name: user.username || 'Anonym'  });
   });
+
+  socket.on('user image', function (data) {
+    let user = users[socket.id];
+    console.log('Received base64 file from ' + user.username);
+    //Received an image: broadcast to all in a room
+    io.to(user.room.name).emit('user image', {time: new Date(), message: data, name: user.username || 'Anonym'  });
+});
 
   //Each socket also fires a special disconnect event
   socket.on('disconnect', function(data){

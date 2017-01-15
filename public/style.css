@@ -32,25 +32,36 @@ header > a:last-child{
 	color: #fff;
 	font-weight: normal;
 }
-footer{
-	top: auto;
-	bottom: 0;
+
+
+#footer{
+	height: 60px;
+  width: 100%;
+  background: #000;
+  position: fixed;
+  bottom: 0;
 }
+
 
 form#chatform, form#fileform {
 	background: #000;
-	padding: 3px;
+	padding: 5px;
 	position: fixed;
 	width: 100%;
 	font-size: 14px;
 }
 
 form#chatform {
-	bottom: 0px;
+	bottom: 30px;
 }
 
 form#fileform {
 	bottom: 0;
+	margin-bottom: 0;
+}
+
+input[type=file] {
+	display: inline-block;
 }
 
 /*form button { width: 9%; background: rgb(130, 224, 255); border: none; padding: 10px; }*/
@@ -62,6 +73,25 @@ form#fileform {
 }
 
 #messages li { padding: 5px 10px; }
+
+.chat-image {
+	max-height: 200px;
+  padding: 5px;
+  border-radius: 5px;
+  border: 1px solid #eee;
+  margin: 0 10px;
+  vertical-align: text-top;
+}
+
+.preview {
+  height: 75px;
+  border: 1px solid #000;
+  margin: 10px 5px 0 0;
+}
+
+output {
+  display: block;
+}
 
 #loginscreen {
 	height: 100%;

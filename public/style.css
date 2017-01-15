@@ -52,11 +52,11 @@ form#chatform, form#fileform {
 }
 
 form#chatform {
-	bottom: 30px;
+	bottom: 0px;
 }
 
 form#fileform {
-	bottom: 0;
+	bottom: 30px;
 	margin-bottom: 0;
 }
 

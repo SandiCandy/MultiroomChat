@@ -47,11 +47,11 @@ socket.on('chat message', function(data){
   let time = new Date(data.time);
   let hours = time.getHours() < 10 ? '0' + time.getHours() : time.getHours();
   let minutes = time.getMinutes() < 10 ? '0' + time.getMinutes() : time.getMinutes();
-  let newMessage = $('<li>').innerHTML = '['+ hours + ':' + minutes + '] <b>' + data.name + ': </b>' + data.message + '<br />';
 
-  $('#messages').append(
-    newMessage
-  );
+  $('#messages')
+    .append($('<li>').text('[' + hours + ':' + minutes + '] ')
+      .append($('<b>').text(data.name + ': '), data.message + '</br>'
+    ));
 
   // Scroll down
   $('body').scrollTop($('body')[0].scrollHeight);
@@ -108,8 +108,8 @@ socket.on('user image', function(data){
   let minutes = time.getMinutes() < 10 ? '0' + time.getMinutes() : time.getMinutes();
 
   $('#messages')
-    .append($('<li>').text('[ ' + hours + ':' + minutes + '] ')
-      .append($('<b>').text(data.name),
+    .append($('<li>').text('[' + hours + ':' + minutes + '] ')
+      .append($('<b>').text(data.name + ': '),
         '<img class="chat-image" src="' + data.message + '"/>'));
 });
 

@@ -14,7 +14,7 @@ $('#loginscreen form').submit(function(){
 });
 
 socket.on('login', function(person, chats){
-  //console.log('login', person);
+
   if(!$('#loginscreen').hasClass('hidden')) {
     $('#loginscreen').addClass('hidden');
     $('#chat').removeClass('hidden');
@@ -136,15 +136,17 @@ socket.on('logout message', function(){
 });
 
 var updateChatList = function(chats) {
-  chats.map(function(chat) {
+
+    Object.keys(chats).map(function(chat) {
+      //console.log('Chats', chats[chat]);
     $('#rooms')
       .append($('<li>', {class: 'room'})
-        .append($('<a/>', { html: chat.name, class: 'chatroom', id: chat.name,  href: ''}))
+        .append($('<a/>', { html: chats[chat].name, class: 'chatroom', id: chats[chat].name,  href: ''}))
       )
 
-    document.getElementById(chat.name).addEventListener('click', function(event) {
+    document.getElementById(chats[chat].name).addEventListener('click', function(event) {
       event.preventDefault();
-      socket.emit('changeRoom', chat.name);
+      socket.emit('changeRoom', chats[chat].name);
     });
   });
 }

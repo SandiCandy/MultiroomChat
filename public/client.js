@@ -13,7 +13,7 @@ $('#loginscreen form').submit(function(){
   return false;
 });
 
-socket.on('login', function(person, chats){
+socket.on('login', function(person, chats, chatroom){
 
   if(!$('#loginscreen').hasClass('hidden')) {
     $('#loginscreen').addClass('hidden');
@@ -22,10 +22,11 @@ socket.on('login', function(person, chats){
 
     // Liste mit aktuellen Chats aktualisieren
     updateChatList(chats);
+    updateUserList(chatroom);
 
   }
 
-  var msg = 'User ' + person.username + ' hat den Chat ' + person.room.name + ' betreten.'
+  var msg = 'User ' + person.username + ' hat den Chat ' + person.room + ' betreten.'
   $('#messages').append($('<li>').text(msg));
 
 });
@@ -117,16 +118,17 @@ $('form#room-form').submit(function() {
 
 });
 
-socket.on('changeRoom', function(person, chats){
-  console.log('User ' + person.username + ' changed to room ' + person.room.name + '!');
+socket.on('changeRoom', function(person, chats, chatroom){
+  console.log('User ' + person.username + ' changed to room ' + person.room + '!');
 
-  var msg = 'User ' + person.username + ' hat den Chat ' + person.room.name + ' betreten.'
+  var msg = 'User ' + person.username + ' hat den Chat ' + person.room + ' betreten.'
   $('#messages').append($('<li>').text(msg));
 
   $('#rooms').empty();
 
   // Liste mit aktuellen Chats aktualisieren
   updateChatList(chats);
+  updateUserList(chatroom);
 
 });
 
@@ -137,16 +139,29 @@ socket.on('logout message', function(){
 
 var updateChatList = function(chats) {
 
-    Object.keys(chats).map(function(chat) {
-      //console.log('Chats', chats[chat]);
+    chats.map(function(chat) {
     $('#rooms')
       .append($('<li>', {class: 'room'})
-        .append($('<a/>', { html: chats[chat].name, class: 'chatroom', id: chats[chat].name,  href: ''}))
+        .append($('<a/>', { html: chat, class: 'chatroom', id: chat,  href: ''}))
       )
 
-    document.getElementById(chats[chat].name).addEventListener('click', function(event) {
+    document.getElementById(chat).addEventListener('click', function(event) {
       event.preventDefault();
-      socket.emit('changeRoom', chats[chat].name);
+      socket.emit('changeRoom', chat);
     });
   });
+}
+
+var updateUserList = function(chatroom) {
+    $('#userlist').empty();
+    for (var id in chatroom.users) {
+    $('#userlist')
+      .append($('<li>', {class: 'user'})
+        .append($('<a/>', { html: chatroom.users[id].username, class: 'chatroom', id: chatroom.users[id].username,  href: ''}))
+      )
+
+    document.getElementById(chatroom.users[id].username).addEventListener('click', function(event) {
+      event.preventDefault();
+    });
+  }
 }

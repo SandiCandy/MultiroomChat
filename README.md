@@ -12,6 +12,7 @@
 * weitere Features (flüstern?)
 * aktuelle Nutzer anzeigen/updaten
 * leere Räume löschen
+* Registrieren?
 
 * Dokumentation
 * App?

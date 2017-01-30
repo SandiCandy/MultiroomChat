@@ -47,9 +47,9 @@ io.on('connection', function(socket){
   });
 
   socket.on('changeRoom', function(roomname) {
-    //TODO: Alte Räume entfernen
     var sid = socket.id;
-    var oldRoom = users[sid].room;
+    var rname = users[sid].room;
+    var oldRoom = chatrooms[rname];
     var existingRoom = false;
 
     if(chatrooms[roomname]) {
@@ -74,7 +74,10 @@ io.on('connection', function(socket){
 
     //User wird über seine Socket.id aus alter Raumliste entfernt
     //TODO: Weitere "Leichen" prüfen und ggf. entfernen?
-    delete chatrooms[oldRoom].users[sid];
+    delete oldRoom.users[sid];
+
+    // Alte (leere) Räume entfernen
+    updateRoomlist(rname);
 
     users[sid].room = chatrooms[roomname].name;
     chatrooms[roomname].users[sid] = users[sid];
@@ -117,8 +120,8 @@ io.on('connection', function(socket){
     }
 
     if(data.message === '/unlock') {
-      var roomname = user.room;
-      var room = chatrooms[roomname];
+      let roomname = user.room;
+      let room = chatrooms[roomname];
       if(room.public) {
         console.log(user.username + ' cannot lock the room ' + room.name + ' because it is already public.');
         return io.to(socket.id).emit('chat message', {time: new Date(), message: 'Du befindest dich schon in einem öffentlichen Raum. Um einen Raum privat zu machen, nutze "/lock".', name: 'INFO'  });
@@ -141,17 +144,27 @@ io.on('connection', function(socket){
   });
 
   socket.on('user image', function (data) {
-    let user = users[socket.id];
+    var user = users[socket.id];
     console.log('Received base64 file from ' + user.username);
     //Received an image: broadcast to all in a room
     io.to(user.room).emit('user image', {time: new Date(), message: data, name: user.username || 'Anonym'  });
 });
 
   //Each socket also fires a special disconnect event
+  //Andere Chatuser erhalten die Nachricht, dass Nutzer den Raum verlassen hat
+  //Austragen aus Nutzerliste
+  //Raum löschen, wenn leer
+  //Update der Nutzerliste ?
   socket.on('disconnect', function(data){
-    //TODO: Welcher User verlässt den chat?
-    console.log('user disconnected', data);
-    io.emit('logout message');
+    var user = users[socket.id];
+    console.log(socket.id, 'User is', user);
+    if(user) {
+      var roomname = user.room;
+      updateRoomlist(roomname);
+      io.to(user.room).emit('chat message', {time: new Date(), message: user.username +' hat den Chat verlassen.', name: 'INFO'  });
+      console.log(socket.id + 'user disconnected', data);
+      delete users[socket.id];
+    }
   });
 
 
@@ -160,3 +173,12 @@ io.on('connection', function(socket){
 http.listen(conf.port, function() {
   console.log('listening on *:' + conf.port);
 });
+
+// Prüfe, ob ein Raum leer ist und gelöscht werden darf
+var updateRoomlist = function(roomname) {
+  let room = chatrooms[roomname];
+  if(Object.keys(room.users).length === 0 && roomname !== 'Neu bei CoffeeChat' && roomname !== 'Osnabrück und Umgebung' && roomname !== 'Professorentreff' && roomname !== 'Studententreff') {
+    console.log(roomname + ' was empty. DELETED.');
+    delete chatrooms[roomname];
+  }
+}

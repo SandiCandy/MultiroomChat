@@ -96,13 +96,13 @@ output {
   display: block;
 }
 
-#loginscreen {
+div.loginscreen {
 	height: 100%;
 	text-align: center;
 	padding-top: 100px;
 }
 
-#loginscreen input {
+div.loginscreen input {
 	height: 2em;
 	font-size: 32px;
 	border-color: grey;

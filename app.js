@@ -22,14 +22,20 @@ app.use(express.static(__dirname + '/public'));
 
 //Route handling
 app.get('/', function (req, res) {
-  //Sending Files
+  //Sending Files (Normal User-Interfaces)
   res.sendFile(__dirname + '/public/index.html');
+});
+
+app.get('/login', function (req, res) {
+  //Sending Files (Admin-Login)
+  res.sendFile(__dirname + '/public/login.html');
 });
 
 //Listening to the connection-event for incoming sockets
 io.on('connection', function(socket){
   console.log('Socket ' + socket.id + ' a user connected');
 
+  //Server receive 'login'-Event with String username
   socket.on('login', function(username) {
     var defaultRoom = chatrooms['Neu bei CoffeeChat'];
     var newPerson = {
@@ -42,10 +48,23 @@ io.on('connection', function(socket){
     defaultRoom.users[socket.id] = newPerson;
 
     socket.join(defaultRoom.name);
+
+    //Server sends login-Event to all users in the room with Object person, Array Object.keys(chatrooms), Object defaultRoom
+    //person.username - username (String)
+    //person.room     - current room (String)
+    //person.owner    - for extra features (boolean)
+    //
+    //Object.keys(chatroom) - contains an array of Strings with all roomnames
+    //
+    //defaultRoom - current room
+    //defaultRoom.name   - roomname
+    //defaultRoom.public - boolean
+    //defaultRoom.users - Object with all Persons in the room (key: socket.id, value: user-Object)
     io.to(defaultRoom.name).emit('login', newPerson, Object.keys(chatrooms), defaultRoom);
 
   });
 
+  //Server receive 'changeRoom'-Event with String roomname
   socket.on('changeRoom', function(roomname) {
     var sid = socket.id;
     var rname = users[sid].room;
@@ -58,7 +77,7 @@ io.on('connection', function(socket){
         //Room ist privat - User kann nicht in den Raum wechseln
         return io.to(sid).emit('chat message', {time: new Date(), message: 'Der gewünschte Raum "' + roomname + '" ist privat.', name: 'INFO'  });
       }
-      console.log('User ' + users[sid].username + ' changed to Room "' + roomname + '".')
+      console.log('User ' + users[sid].username + ' changed to Room "' + roomname + '".');
       users[sid].owner = false;
 
     }
@@ -66,15 +85,15 @@ io.on('connection', function(socket){
     if(!existingRoom) {
       chatrooms[roomname] = { name: roomname, public: true, users: {}};
       users[sid].owner = true;
-      console.log('Room "' + roomname + '" created!')
+      console.log('Room "' + roomname + '" created!');
     }
 
     io.to(users[sid].room).emit('chat message', {time: new Date(), message: users[sid].username +' ist in den Raum "' + roomname + '" gewechselt.', name: 'INFO'  });
     socket.leave(users[sid].room);
 
     //User wird über seine Socket.id aus alter Raumliste entfernt
-    //TODO: Weitere "Leichen" prüfen und ggf. entfernen?
     delete oldRoom.users[sid];
+    delete chatrooms[rname].users[sid];
 
     // Alte (leere) Räume entfernen
     updateRoomlist(rname);
@@ -83,27 +102,32 @@ io.on('connection', function(socket){
     chatrooms[roomname].users[sid] = users[sid];
 
     socket.join(users[sid].room);
+
+    //Server sends login-Event to all users in the room with
+    //Object users[sid]             - the person,
+    //Array Object.keys(chatrooms)  - all chatrooms,
+    //Object chatrooms[roomname]    - the new room
+
     io.to(roomname).emit('changeRoom', users[sid], Object.keys(chatrooms), chatrooms[roomname]);
 
   });
 
 
-  //Server receive 'chat message'-Event from a user
-  socket.on('chat message', function(data) {
+  //Server receive 'chat message'-Event with String message from a user
+  socket.on('chat message', function(message) {
     var user = users[socket.id];
-    //var usersInRoom = user.room.users;
-    if (data.message.startsWith('/remove ')) {
+    if (message.startsWith('/remove ')) {
       if(!user.owner) {
         console.log(user + ' is not a owner and cannot remove other users.');
         return io.to(socket.id).emit('chat message', {time: new Date(), message: 'Du kannst hier keine Personen entfernen.', name: 'INFO'  });
       }
-      var to_remove = data.message.slice(7);
+      var to_remove = message.slice(7);
       return io.to(socket.id).emit('chat message', {time: new Date(), message: to_remove + ' wurde nicht gefunden.', name: 'INFO'  });
       //TODO: Durchsuchen, ob User mit dem Namen im Raum ist
 
     }
 
-    if(data.message === '/lock') {
+    if(message === '/lock') {
       var roomname = user.room;
       var room = chatrooms[roomname];
       if(!room.public) {
@@ -119,7 +143,7 @@ io.on('connection', function(socket){
 
     }
 
-    if(data.message === '/unlock') {
+    if(message === '/unlock') {
       let roomname = user.room;
       let room = chatrooms[roomname];
       if(room.public) {
@@ -135,14 +159,15 @@ io.on('connection', function(socket){
 
     }
 
-    if(data.message === '/info') {
+    if(message === '/info') {
       //TODO
     }
 
-    console.log('[' + user.room + '] message: ' + data.message + ' from ' + user.username);
-    io.to(user.room).emit('chat message', {time: new Date(), message: data.message, name: user.username || 'Anonym'  });
+    console.log('[' + user.room + '] message: ' + message + ' from ' + user.username);
+    io.to(user.room).emit('chat message', {time: new Date(), message: message, name: user.username || 'Anonym'  });
   });
 
+  ///Server receive 'user image'-Event with data (base64 file) from a user
   socket.on('user image', function (data) {
     var user = users[socket.id];
     console.log('Received base64 file from ' + user.username);
@@ -156,13 +181,13 @@ io.on('connection', function(socket){
   //Raum löschen, wenn leer
   //Update der Nutzerliste ?
   socket.on('disconnect', function(data){
-    var user = users[socket.id];
-    console.log(socket.id, 'User is', user);
+    let user = users[socket.id];
     if(user) {
+      console.log(socket.id + ' :User ' + user + 'left the chat.');
       var roomname = user.room;
+      delete chatrooms[roomname].users[socket.id];
       updateRoomlist(roomname);
       io.to(user.room).emit('chat message', {time: new Date(), message: user.username +' hat den Chat verlassen.', name: 'INFO'  });
-      console.log(socket.id + 'user disconnected', data);
       delete users[socket.id];
     }
   });
@@ -181,4 +206,4 @@ var updateRoomlist = function(roomname) {
     console.log(roomname + ' was empty. DELETED.');
     delete chatrooms[roomname];
   }
-}
+};

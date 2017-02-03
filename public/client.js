@@ -1,9 +1,11 @@
 "use strict"
 
-<!-- Connect -->
+// Connect
 var socket = io();
 
-$('#loginscreen form').submit(function(){
+//User sends the username from the Server as "login"-Event with
+//username - username (String)
+$('.loginscreen form').submit(function(){
   var username = $('#nickname').val();
   if (username)
   {
@@ -13,10 +15,35 @@ $('#loginscreen form').submit(function(){
   return false;
 });
 
+//TODO
+//Admin sends the username from the Server as "login"-Event with
+//username - username (String)
+//password
+$('#admin.loginscreen form').submit(function(){
+  var username = $('#nickname').val();
+  if (username)
+  {
+    $('#username').val(username);
+    socket.emit('login', username);
+  }
+  return false;
+});
+
+//Receive "login"-Event with Object person, Array chats, Object chatroom
+//person.username - username (String)
+//person.room     - current room (String)
+//person.owner    - for extra features (boolean)
+//
+//chats - contains an array of Strings with all roomnames
+//
+//chatroom - current room
+//chatroom.name   - roomname
+//chatroom.public - boolean
+//chatroom.users - Object with all Persons in the room (key: socket.id, value: user-Object)
 socket.on('login', function(person, chats, chatroom){
 
-  if(!$('#loginscreen').hasClass('hidden')) {
-    $('#loginscreen').addClass('hidden');
+  if(!$('.loginscreen').hasClass('hidden')) {
+    $('.loginscreen').addClass('hidden');
     $('#chat').removeClass('hidden');
     $('#sidebar').removeClass('hidden');
 
@@ -32,18 +59,21 @@ socket.on('login', function(person, chats, chatroom){
 });
 
 // User sends a message to the server, which get this as an "chat message"-Event
+// msg  - chatmessage (String)
 $('#chatform').submit(function(){
   let msg = $('#message').val();
 
   if (msg)
   {
-    socket.emit('chat message', {message: msg});
+    socket.emit('chat message', msg);
     $('#message').val('');
   }
   return false;
 });
 
-//Receive the messages from the Server
+//Receive the chatmessages from the Server with Object data
+//data.name     - username    (String)
+//data.message  - chatmessage (String)
 socket.on('chat message', function(data){
   let time = new Date(data.time);
   let hours = time.getHours() < 10 ? '0' + time.getHours() : time.getHours();
@@ -58,7 +88,7 @@ socket.on('chat message', function(data){
   $('body').scrollTop($('body')[0].scrollHeight);
 });
 
-// User sends a picture to the server, which get this as an "chat message"-Event
+// User sends a picture to the server, which get this as an "user image"-Event
 function dataReader(evt) {
     var files = evt.target.files; // FileList object
 
@@ -93,7 +123,9 @@ function dataReader(evt) {
 // Auf neue Auswahl reagieren und gegebenenfalls Funktion dataReader neu ausführen.
 document.getElementById('files').addEventListener('change', dataReader, false);
 
-
+//Receive pictures from the Server with Object data
+//data.name     - username          (String)
+//data.message  - source of picture (String)
 socket.on('user image', function(data){
   let time = new Date(data.time);
   let hours = time.getHours() < 10 ? '0' + time.getHours() : time.getHours();
@@ -105,7 +137,9 @@ socket.on('user image', function(data){
         '<img class="chat-image" src="' + data.message + '"/>'));
 });
 
-//Neuen Raum erstellen und betreten
+//Create new room and step in
+//User sends the roomname to the server, which get this as an "changeRoom"-Event
+//room  - roonname (String)
 $('form#room-form').submit(function() {
   var room = $('#room').val();
 
@@ -118,8 +152,11 @@ $('form#room-form').submit(function() {
 
 });
 
+//Receive the chatmessages from the Server with Object person, the array chats and the Object chatroom
+//person.usernname     - username    (String)
+//data.message  - chatmessage (String)
 socket.on('changeRoom', function(person, chats, chatroom){
-  console.log('User ' + person.username + ' changed to room ' + person.room + '!');
+  //console.log('User ' + person.username + ' changed to room ' + person.room + '!');
 
   var msg = 'User ' + person.username + ' hat den Chat ' + person.room + ' betreten.'
   $('#messages').append($('<li>').text(msg));
@@ -130,11 +167,6 @@ socket.on('changeRoom', function(person, chats, chatroom){
   updateChatList(chats);
   updateUserList(chatroom);
 
-});
-
-socket.on('logout message', function(){
-  var msg = 'User  hat den Chat verlassen.'
-  $('#messages').append($('<li>').text(msg));
 });
 
 var updateChatList = function(chats) {
@@ -150,7 +182,7 @@ var updateChatList = function(chats) {
       socket.emit('changeRoom', chat);
     });
   });
-}
+};
 
 var updateUserList = function(chatroom) {
     $('#userlist').empty();
@@ -164,4 +196,4 @@ var updateUserList = function(chatroom) {
       event.preventDefault();
     });
   }
-}
+};

@@ -10,12 +10,17 @@ var io = require('socket.io')(http);
 
 const users = {};
 const chatrooms = {};
+const admins = {};
 
 //StandardsChats - gibt es immer
 chatrooms['Neu bei CoffeeChat'] = { name: 'Neu bei CoffeeChat', public: true, users: {} };
 chatrooms['Osnabrück und Umgebung'] = {name: 'Osnabrück und Umgebung', public: true, users: {} };
 chatrooms['Studententreff'] = {name: 'Studententreff', public: true, users: {} };
 chatrooms['Professorentreff'] = {name: 'Professorentreff', public: false, users: {} };
+
+//Admin-Liste
+admins['Barista'] = 'password';
+
 
 // tell express where to serve static files from
 app.use(express.static(__dirname + '/public'));
@@ -37,6 +42,17 @@ io.on('connection', function(socket){
 
   //Server receive 'login'-Event with String username
   socket.on('login', function(username) {
+    //Checken, ob username schon vergeben ist
+    for(let sid in users){
+      if(users[sid].username === username) {
+        return io.to(socket.id).emit('login-error', username);
+      }
+    }
+    //Checken, ob username einem Admin gehört
+    if(admins.hasOwnProperty(username)) {
+        return io.to(socket.id).emit('login-error', username);
+    }
+
     var defaultRoom = chatrooms['Neu bei CoffeeChat'];
     var newPerson = {
       username: username,
@@ -60,6 +76,29 @@ io.on('connection', function(socket){
     //defaultRoom.name   - roomname
     //defaultRoom.public - boolean
     //defaultRoom.users - Object with all Persons in the room (key: socket.id, value: user-Object)
+    io.to(defaultRoom.name).emit('login', newPerson, Object.keys(chatrooms), defaultRoom);
+
+  });
+
+  //Server receive 'login'-Event with String username
+  socket.on('admin-login', function(username, pw) {
+    console.log('Admin-Login: ' + username + ': ' + pw);
+    if(!admins.hasOwnProperty(username) && admins[username] !== pw) {
+      return io.to(socket.id).emit('login-error', username);
+    }
+
+    //Admin muss in Nutzerliste eingetragen werden
+    var defaultRoom = chatrooms['Neu bei CoffeeChat'];
+    var newPerson = {
+      username: username,
+      room: defaultRoom.name,
+      owner: true
+    };
+
+    users[socket.id] = newPerson;
+    defaultRoom.users[socket.id] = newPerson;
+
+    socket.join(defaultRoom.name);
     io.to(defaultRoom.name).emit('login', newPerson, Object.keys(chatrooms), defaultRoom);
 
   });
@@ -116,14 +155,22 @@ io.on('connection', function(socket){
   //Server receive 'chat message'-Event with String message from a user
   socket.on('chat message', function(message) {
     var user = users[socket.id];
+    var room = chatrooms[user.room];
     if (message.startsWith('/remove ')) {
       if(!user.owner) {
         console.log(user + ' is not a owner and cannot remove other users.');
         return io.to(socket.id).emit('chat message', {time: new Date(), message: 'Du kannst hier keine Personen entfernen.', name: 'INFO'  });
       }
-      var to_remove = message.slice(7);
+      var to_remove = message.slice(7).trim();
+      for(let sid in room.users) {
+        if(user.username === to_remove) {
+          return io.to(socket.id).emit('chat message', {time: new Date(), message: 'Du kannst dich nicht selber entfernen!', name: 'INFO'  });
+        }
+        if(room.users[sid].username === to_remove) {
+          //TODO: User in Defaultroom werfen 'changeRoom'-Methode
+        }
+      }
       return io.to(socket.id).emit('chat message', {time: new Date(), message: to_remove + ' wurde nicht gefunden.', name: 'INFO'  });
-      //TODO: Durchsuchen, ob User mit dem Namen im Raum ist
 
     }
 
@@ -139,6 +186,7 @@ io.on('connection', function(socket){
         return io.to(socket.id).emit('chat message', {time: new Date(), message: 'Du kannst diesen Raum nicht privat machen.', name: 'INFO'  });
       }
       room.public = false;
+      io.to(roomname).emit('chat message', {time: new Date(), message: user.username + ' hat diesen Raum "' + room.name + '" geschlossen.', name: 'INFO'  });
       return io.to(socket.id).emit('chat message', {time: new Date(), message: room.name + ' ist jetzt privat. Nutze "/unlock", um den Raum wieder öffentlich zu machen.', name: 'INFO'  });
 
     }
@@ -155,6 +203,7 @@ io.on('connection', function(socket){
         return io.to(socket.id).emit('chat message', {time: new Date(), message: 'Du kannst diesen Raum nicht öffentlich machen.', name: 'INFO'  });
       }
       room.public = true;
+      io.to(roomname).emit('chat message', {time: new Date(), message: user.username + ' hat diesen Raum "' + room.name + '" öffentlich gemacht.', name: 'INFO'  });
       return io.to(socket.id).emit('chat message', {time: new Date(), message: room.name + ' ist jetzt öffentlich. Nutze "/lock", um den Raum wieder privat zu machen.', name: 'INFO'  });
 
     }
@@ -183,7 +232,7 @@ io.on('connection', function(socket){
   socket.on('disconnect', function(data){
     let user = users[socket.id];
     if(user) {
-      console.log(socket.id + ' :User ' + user + 'left the chat.');
+      console.log(socket.id + ' :User ' + user.username + 'left the chat.');
       var roomname = user.room;
       delete chatrooms[roomname].users[socket.id];
       updateRoomlist(roomname);

@@ -5,7 +5,7 @@ var socket = io();
 
 //User sends the username from the Server as "login"-Event with
 //username - username (String)
-$('.loginscreen form').submit(function(){
+$('#user-login.loginscreen form').submit(function(){
   var username = $('#nickname').val();
   if (username)
   {
@@ -15,16 +15,32 @@ $('.loginscreen form').submit(function(){
   return false;
 });
 
+socket.on('login-error', function(username) {
+  //TODO: Fehlermeldung ausgeben
+  $('#username').val('');
+  $('#nickname').val('');
+  if($('#user-login').length) {
+    $('.loginscreen')
+      .prepend($('<p>').text('Benutzername nicht verfügbar!'));
+  }
+  if($('#admin-login').length) {
+    $('.loginscreen')
+      .prepend($('<p>').text('Benutzername oder Password fehlerhaft!'));
+  }
+
+});
+
 //TODO
 //Admin sends the username from the Server as "login"-Event with
 //username - username (String)
 //password
-$('#admin.loginscreen form').submit(function(){
+$('#admin-login.loginscreen form').submit(function(){
   var username = $('#nickname').val();
-  if (username)
+  var pw = $('#pw').val();
+  if (username && pw)
   {
     $('#username').val(username);
-    socket.emit('login', username);
+    socket.emit('admin-login', username, pw);
   }
   return false;
 });

@@ -74,14 +74,14 @@ socket.on('login', function(person, chats, chatroom){
 
 });
 
-// User sends a message to the server, which get this as an "chat message"-Event
+// User sends a message to the server, which get this as an "chatmessage"-Event
 // msg  - chatmessage (String)
 $('#chatform').submit(function(){
   let msg = $('#message').val();
 
   if (msg)
   {
-    socket.emit('chat message', msg);
+    socket.emit('chatmessage', msg);
     $('#message').val('');
   }
   return false;
@@ -90,7 +90,7 @@ $('#chatform').submit(function(){
 //Receive the chatmessages from the Server with Object data
 //data.name     - username    (String)
 //data.message  - chatmessage (String)
-socket.on('chat message', function(data){
+socket.on('chatmessage', function(data){
   let time = new Date(data.time);
   let hours = time.getHours() < 10 ? '0' + time.getHours() : time.getHours();
   let minutes = time.getMinutes() < 10 ? '0' + time.getMinutes() : time.getMinutes();
@@ -104,7 +104,7 @@ socket.on('chat message', function(data){
   $('body').scrollTop($('body')[0].scrollHeight);
 });
 
-// User sends a picture to the server, which get this as an "user image"-Event
+// User sends a picture to the server, which get this as an "user-image"-Event
 function dataReader(evt) {
     var files = evt.target.files; // FileList object
 
@@ -125,7 +125,7 @@ function dataReader(evt) {
     		  preview.src = e.target.result;
     		  preview.title = theFile.name;
           document.getElementById('list').insertBefore(preview, null);
-          socket.emit('user image', e.target.result);
+          socket.emit('user-image', e.target.result);
         };
       })(f);
 
@@ -142,7 +142,7 @@ document.getElementById('files').addEventListener('change', dataReader, false);
 //Receive pictures from the Server with Object data
 //data.name     - username          (String)
 //data.message  - source of picture (String)
-socket.on('user image', function(data){
+socket.on('user-image', function(data){
   let time = new Date(data.time);
   let hours = time.getHours() < 10 ? '0' + time.getHours() : time.getHours();
   let minutes = time.getMinutes() < 10 ? '0' + time.getMinutes() : time.getMinutes();
@@ -154,14 +154,14 @@ socket.on('user image', function(data){
 });
 
 //Create new room and step in
-//User sends the roomname to the server, which get this as an "changeRoom"-Event
+//User sends the roomname to the server, which get this as an "change-room"-Event
 //room  - roonname (String)
 $('form#room-form').submit(function() {
   var room = $('#room').val();
 
   if(room)
   {
-    socket.emit('changeRoom', room);
+    socket.emit('change-room', room);
     $('#room').val('');
   }
   return false;
@@ -171,7 +171,7 @@ $('form#room-form').submit(function() {
 //Receive the chatmessages from the Server with Object person, the array chats and the Object chatroom
 //person.usernname     - username    (String)
 //data.message  - chatmessage (String)
-socket.on('changeRoom', function(person, chats, chatroom){
+socket.on('change-room', function(person, chats, chatroom){
   //console.log('User ' + person.username + ' changed to room ' + person.room + '!');
 
   var msg = 'User ' + person.username + ' hat den Chat ' + person.room + ' betreten.'
@@ -195,7 +195,7 @@ var updateChatList = function(chats) {
 
     document.getElementById(chat).addEventListener('click', function(event) {
       event.preventDefault();
-      socket.emit('changeRoom', chat);
+      socket.emit('change-room', chat);
     });
   });
 };

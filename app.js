@@ -5,59 +5,27 @@ var http = require('http').Server(app);
 //Config-File
 var conf = require('./config.json');
 
-//MongoDB
-var mongoose = require('mongoose');
-// mongoose.connect('mongodb://localhost/test');
-//
-// var db = mongoose.connection;
-// db.on('error', console.error.bind(console, 'connection error:'));
-// db.once('open', function() {
-//   // we're connected!
-// });
-
-// create a schema for chat
-// var UserSchema = mongoose.Schema({
-//   sid: String,
-//   username: String,
-//   room: Boolean,
-//   owner: Boolean,
-//   admin: Boolean
-// });
-//
-// var AdminSchema = mongoose.Schema({
-//   username: String,
-//   password: String
-// });
-//
-// var ChatSchema = mongoose.Schema({
-//   name: String,
-//   public: Boolean,
-//   users: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User'}]
-// });
-//
-// //Create models from the Schemes
-// var User = mongoose.model('User', UserSchema);
-// var Admin = mongoose.model('Admin', AdminSchema);
-// var Chat = mongoose.model('Chat', ChatSchema);
-
-//DefaultChats
-// var chat1 = new Chat({ name: 'Neu bei CoffeeChat', public: true });
-// var chat2 = new Chat({ name: 'Osnabrück und Umgebung', public: true });
-// var chat3 = new Chat({ name: 'Studententreff', public: true });
-// var chat4 = new Chat({ name: 'Professorentreff', public: false });
-
-// Server that integrates the Node.js HTTP-Server
-var io = require('socket.io')(http);
-
 const users = {};
 const chatrooms = {};
 const admins = {};
 
-//StandardsChats - gibt es immer
-chatrooms['Neu bei CoffeeChat'] = { name: 'Neu bei CoffeeChat', public: true, users: {} };
-chatrooms['Osnabrück und Umgebung'] = {name: 'Osnabrück und Umgebung', public: true, users: {} };
-chatrooms['Studententreff'] = {name: 'Studententreff', public: true, users: {} };
-chatrooms['Professorentreff'] = {name: 'Professorentreff', public: false, users: {} };
+// Server that integrates the Node.js HTTP-Server
+var io = require('socket.io')(http);
+
+http.listen(conf.port, function() {
+  console.log('listening on *:' + conf.port);
+
+  var rooms = conf.rooms;
+  for(let key in rooms) {
+    chatrooms[rooms[key].name] = {
+      name: rooms[key].name,
+      public: rooms[key].public,
+      users: {}
+    };
+  }
+  console.log('Chaträume werden konfiguriert...');
+
+});
 
 //Admin-Liste
 admins['Barista'] = 'password';
@@ -71,12 +39,13 @@ app.post('/setup', function(req, res) {
     { name: 'Professorentreff', public: false }];
 
     //Loop through each of the chat data and insert into the database
-    chats.forEach(function(chat){
-      var newChat = new Chat(chat);
-      newChat.save(function(err, savedChat) {
-        console.log(savedChat);
-      });
-    });
+    for(chat in conf.rooms) {
+      chatrooms[chat.name] = {
+        name: chat.name,
+        public: chat.public,
+        users: {}
+      }
+    };
 
   //Send a resoponse so the serve would not get stuck
   res.send('created');
@@ -112,7 +81,7 @@ io.on('connection', function(socket){
         return io.to(socket.id).emit(conf.command.loginError, username);
     }
 
-    var defaultRoom = chatrooms['Neu bei CoffeeChat'];
+    var defaultRoom = chatrooms[conf.rooms.defaultChat.name];
     var newPerson = {
       username: username,
       room: defaultRoom.name,
@@ -209,10 +178,6 @@ io.on('connection', function(socket){
   });
 }); //io.on(connection)-Ende
 
-http.listen(conf.port, function() {
-  console.log('listening on *:' + conf.port);
-});
-
 // Prüfe, ob ein Raum leer ist und gelöscht werden darf
 var updateRoomlist = function(roomname) {
   let room = chatrooms[roomname];
@@ -226,29 +191,6 @@ var updateRoomlist = function(roomname) {
 var handleChatcommand = function(message, socket) {
   var user = users[socket.id];
   var room = chatrooms[user.room];
-
-  if (message.startsWith('/remove ')) {
-    if(!user.owner) {
-      console.log('[' + user.room + '] ' + user.username + ' is not a owner and cannot remove other users.');
-      return io.to(socket.id).emit(conf.command.chatmessage, {time: new Date(), message: 'Du kannst hier keine Personen entfernen.', name: 'INFO'  });
-    }
-    var to_remove = message.slice(7).trim();
-    console.log(user.username + ' wants to remove ' + to_remove);
-
-    for(let sid in room.users) {
-      if(user.username === to_remove) {
-        return io.to(socket.id).emit(conf.command.chatmessage, {time: new Date(), message: 'Du kannst dich nicht selber entfernen!', name: 'INFO'  });
-      }
-      if(room.users[sid].username === to_remove && user.username !== to_remove) {
-        var defaultChat = conf.rooms.defaultChat.name;
-        io.to(sid).emit(conf.command.chatmessage, {time: new Date(), message: 'Der Raumbesitzer hat dich aus den Raum geworfen. Du findest dich jetzt wieder im Raum "' + defaultChat + '".', name: 'INFO'  });
-
-        return changeChatroom(defaultChat, io.sockets.connected[sid]);
-      }
-    }
-    return io.to(socket.id).emit(conf.command.chatmessage, {time: new Date(), message: to_remove + ' wurde nicht gefunden.', name: 'INFO'  });
-
-  }
 
   if(message === '/lock') {
     if(!room.public) {
@@ -289,6 +231,61 @@ var handleChatcommand = function(message, socket) {
     return io.to(socket.id).emit(conf.command.chatmessage, {time: new Date(), message: help, name: 'INFO'  });
   }
 
+  if (message.startsWith('/remove ')) {
+    if(!user.owner) {
+      console.log('[' + user.room + '] ' + user.username + ' is not a owner and cannot remove other users.');
+      return io.to(socket.id).emit(conf.command.chatmessage, {time: new Date(), message: 'Du kannst hier keine Personen entfernen.', name: 'INFO'  });
+    }
+    var to_remove = message.slice(7).trim();
+    console.log(user.username + ' wants to remove ' + to_remove);
+
+    for(let sid in room.users) {
+      if(user.username === to_remove) {
+        return io.to(socket.id).emit(conf.command.chatmessage, {time: new Date(), message: 'Du kannst dich nicht selber entfernen!', name: 'INFO'  });
+      }
+      if(room.users[sid].username === to_remove && user.username !== to_remove) {
+        var defaultChat = conf.rooms.defaultChat.name;
+        io.to(sid).emit(conf.command.chatmessage, {time: new Date(), message: 'Der Raumbesitzer hat dich aus den Raum geworfen. Du findest dich jetzt wieder im Raum "' + defaultChat + '".', name: 'INFO'  });
+
+        return changeChatroom(defaultChat, io.sockets.connected[sid]);
+      }
+    }
+    return io.to(socket.id).emit(conf.command.chatmessage, {time: new Date(), message: to_remove + ' wurde nicht gefunden.', name: 'INFO'  });
+
+  }
+
+  if (message.startsWith('/owns ')) {
+    if(!user.owner) {
+      console.log('[' + user.room + '] ' + user.username + ' is not a owner and cannot give other users owner-rights.');
+      return io.to(socket.id).emit(conf.command.chatmessage, {time: new Date(), message: 'Du bist kein Raumbesitzer von diesem Raum.', name: 'INFO'  });
+    }
+    var newOwner = message.slice(5).trim();
+    console.log(user.username + ' wants to give ' + newOwner + ' owner-rights.');
+
+    for(let sid in room.users) {
+      if(user.username === newOwner) {
+        return io.to(socket.id).emit(conf.command.chatmessage, {time: new Date(), message: 'Du bist schon Raumbesitzer!', name: 'INFO'  });
+      }
+      if(room.users[sid].username === newOwner) {
+        room.users[sid].owner = true;
+        return io.to(room.users[sid].room).emit(conf.command.chatmessage, {time: new Date(), message: newOwner + ' ist jetzt Raumbesitzer im Raum "' + room.users[sid].room + '".', name: 'INFO'  });
+      }
+    }
+    return io.to(socket.id).emit(conf.command.chatmessage, {time: new Date(), message: to_remove + ' wurde nicht gefunden.', name: 'INFO'  });
+
+  }
+
+  if (message.startsWith('/all ')) {
+    if(!admins.hasOwnProperty(user.username)) {
+      console.log('[' + user.room + '] ' + user.username + ' is not a admin and cannot use the "/all"-Command.');
+      return io.to(socket.id).emit(conf.command.chatmessage, {time: new Date(), message: 'Du kannst diesen Befehl nicht benutzen!', name: 'INFO'  });
+    }
+    var text = message.slice(4).trim();
+    console.log('[Admindurchsage]: ' + text + ' from ' + user.username)
+    return io.emit(conf.command.chatmessage, {time: new Date(), message: text , name: 'ADMINDURCHSAGE'  });
+
+  }
+
   else {
     return io.to(socket.id).emit(conf.command.chatmessage, {time: new Date(), message: 'Der Befehl ' + message + ' existiert nicht. Für mehr Informationen nutze den Befehl "/help".', name: 'INFO'  });
   }
@@ -298,26 +295,34 @@ var changeChatroom = function(roomname, socket) {
   var user = users[socket.id];
   var rname = user.room;
   var oldRoom = chatrooms[rname];
-  var existingRoom = false;
 
+  //User befindet sich bereits in dem Raum
+  if(rname === roomname) {
+    return io.to(socket.id).emit(conf.command.chatmessage, {time: new Date(), message: 'Du befindest dich bereits im Raum "' + roomname + '" .', name: 'PRIVATE INFO'  });
+  }
+
+  //Prüfe, ob der gewünschte Raum schon vorhanden ist
   if(chatrooms[roomname]) {
-    existingRoom = true;
-    if(!chatrooms[roomname].public) {
-      //Room ist privat - User kann nicht in den Raum wechseln
-      return io.to(socket.id).emit(conf.command.chatmessage, {time: new Date(), message: 'Der gewünschte Raum "' + roomname + '" ist privat.', name: 'INFO'  });
+    if(!chatrooms[roomname].public && !admins.hasOwnProperty(user.username)) {
+      //Room ist privat - User kann nicht in den Raum wechseln (außer als Admin)
+      return io.to(socket.id).emit(conf.command.chatmessage, {time: new Date(), message: 'Der gewünschte Raum "' + roomname + '" ist privat.', name: 'PRIVATE INFO'  });
     }
     console.log('User ' + user.username + ' changed to Room "' + roomname + '".');
     user.owner = false;
 
+    // Admins haben immer und überall den Owner-Status
+    if(admins.hasOwnProperty(user.username)) {
+      user.owner = true;
+    }
   }
-
-  // Room doesnt exist - create new room
-  if(!existingRoom) {
+  // Raum noch nicht vorhanden - neuen Raum erstellen
+  else {
     chatrooms[roomname] = { name: roomname, public: true, users: {}};
     user.owner = true;
     console.log('Room "' + roomname + '" created!');
   }
 
+  console.log('User ' + user.username + ' changed from ' + user.room +  ' to Room "' + roomname + '".');
   io.to(user.room).emit(conf.command.chatmessage, {time: new Date(), message: user.username +' ist in den Raum "' + roomname + '" gewechselt.', name: 'INFO'  });
   socket.leave(user.room);
 

@@ -172,7 +172,6 @@ $('form#room-form').submit(function() {
 //person.usernname     - username    (String)
 //data.message  - chatmessage (String)
 socket.on('change-room', function(person, chats, chatroom){
-  //console.log('User ' + person.username + ' changed to room ' + person.room + '!');
 
   var msg = 'User ' + person.username + ' hat den Chat ' + person.room + ' betreten.'
   $('#messages').append($('<li>').text(msg));

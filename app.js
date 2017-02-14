@@ -140,16 +140,19 @@ io.on('connection', function(socket){
 
 
   //Server receive 'chatmessage'-Event with String message from a user
-  socket.on(conf.command.chatmessage, function(message) {
+  socket.on(conf.command.chatmessage, function(message, filedata) {
     var user = users[socket.id];
-    var room = chatrooms[user.room];
-    if(message.startsWith('/')) {
-      // Special commands
-      return handleChatcommand(message, socket);
-    }
+    var room;
+    if(user) {
+        room = chatrooms[user.room];
+        if(message.startsWith('/')) {
+          // Special commands
+          return handleChatcommand(message, socket);
+        }
+        console.log('[' + user.room + '] message: ' + message + ' from ' + user.username);
+        io.to(user.room).emit(conf.command.chatmessage, {time: new Date(), message: message, name: user.username || 'Anonym'  });
 
-    console.log('[' + user.room + '] message: ' + message + ' from ' + user.username);
-    io.to(user.room).emit(conf.command.chatmessage, {time: new Date(), message: message, name: user.username || 'Anonym'  });
+    }
   });
 
   ///Server receive 'user-image'-Event with data (base64 file) from a user

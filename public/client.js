@@ -210,7 +210,7 @@ var updateUserList = function(chatroom) {
         .append($('<li>', { html: chatroom.users[id].username, class: 'user chatroom', id: chatroom.users[id].username}))
 
       if(chatroom.users[id].owner) {
-        $('#' + username).prepend($('<span>', { html: ' ' class: 'glyphicon glyphicon-star-empty'}));
+        $('#' + username).prepend($('<span>', { html: ' ', class: 'glyphicon glyphicon-star-empty'}));
       }
 
       document.getElementById(chatroom.users[id].username).addEventListener('click', function(event) {

@@ -20,8 +20,10 @@
   <body>
     <!-- Loginscreen -->
     <div id="user-login" class="loginscreen">
+      <h1>Willkommen bei CoffeeChat!</h1>
+      <h2>einfach & anonym </h2>
       <form action="" class="form-group">
-        <input id="nickname" type="text" placeholder="Dein Name" />
+        <input id="nickname" type="text" placeholder="Dein Name" autofocus=""/>
         <input id="send" class="hidden" type="submit" value="send" />
       </form>
     </div>
@@ -34,7 +36,7 @@
         <form action="" id="chatform" class="form-inline">
           <input id="username" type="text" placeholder="Dein Name" disabled/>
           <input id="message" autocomplete="off" placeholder="Deine Nachricht..."/>
-          <input id="send" type="submit" value="send" />
+          <input class="btn btn-default" id="send" type="submit" value="SENDEN" />
         </form>
         <form action="" id="fileform" class="form-group">
           <button class"btn"><input id="files" type="file" accept="image/*" name="files[]" multiple /></button>
@@ -43,7 +45,11 @@
     </div> <!-- Chatbereich Ende -->
 
     <div id="sidebar" class="hidden">
+      <h3>Userliste</h3>
       <ul id="userlist"></ul>
+      <div id="counter"></div>
+      </br>
+      <h3>Raumliste</h3>
       <ul id="rooms"></ul>
       <form id="room-form" action="" class="form-group">
         <input id="room" type="text" placeholder"Neuen Raum eröffnen..."/>

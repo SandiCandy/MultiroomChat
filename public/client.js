@@ -140,8 +140,8 @@ function dataReader(evt) {
 document.getElementById('files').addEventListener('change', dataReader, false);
 
 //Receive pictures from the Server with Object data
-//data.name     - username          (String)
-//data.message  - source of picture (String)
+  //data.name     - username          (String)
+  //data.message  - source of picture (String)
 socket.on('user-image', function(data){
   let time = new Date(data.time);
   let hours = time.getHours() < 10 ? '0' + time.getHours() : time.getHours();
@@ -155,7 +155,7 @@ socket.on('user-image', function(data){
 
 //Create new room and step in
 //User sends the roomname to the server, which get this as an "change-room"-Event
-//room  - roonname (String)
+  //room  - roonname (String)
 $('form#room-form').submit(function() {
   var room = $('#room').val();
 
@@ -169,8 +169,8 @@ $('form#room-form').submit(function() {
 });
 
 //Receive the chatmessages from the Server with Object person, the array chats and the Object chatroom
-//person.usernname     - username    (String)
-//data.message  - chatmessage (String)
+  //person.username - username    (String)
+  //data.message    - chatmessage (String)
 socket.on('change-room', function(person, chats, chatroom){
 
   var msg = 'User ' + person.username + ' hat den Chat ' + person.room + ' betreten.'
@@ -200,15 +200,25 @@ var updateChatList = function(chats) {
 };
 
 var updateUserList = function(chatroom) {
+    $('#counter').empty();
     $('#userlist').empty();
+    var count = 0;
     for (var id in chatroom.users) {
-    $('#userlist')
-      .append($('<li>', {class: 'user'})
-        .append($('<a/>', { html: chatroom.users[id].username, class: 'chatroom', id: chatroom.users[id].username,  href: ''}))
-      )
+      var username = chatroom.users[id].username;
 
-    document.getElementById(chatroom.users[id].username).addEventListener('click', function(event) {
-      event.preventDefault();
-    });
-  }
+      $('#userlist')
+        .append($('<li>', { html: chatroom.users[id].username, class: 'user chatroom', id: chatroom.users[id].username}))
+
+      if(chatroom.users[id].owner) {
+        $('#' + username).prepend($('<span>', { html: ' ' class: 'glyphicon glyphicon-star-empty'}));
+      }
+
+      document.getElementById(chatroom.users[id].username).addEventListener('click', function(event) {
+        event.preventDefault();
+      });
+
+      count++;
+    }
+
+    $('#counter').append($('<span>', {html: count + ' User anwesend'}))
 };

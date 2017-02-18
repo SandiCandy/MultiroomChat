@@ -20,22 +20,26 @@
   <body>
     <!-- Loginscreen für Administrator-Login-->
     <div id="admin-login" class="loginscreen">
-      <form action="" class="form-group">
-        <input id="nickname" type="text" placeholder="Dein Name" />
-        <input id="pw" type="password" placeholder="Dein Passwort" />
+      <h1>Willkommen bei CoffeeChat!</h1>
+      <h2>einfach & anonym </h2>
+      <form action="" class="row form-group">
+        <input id="nickname" class="col-md-6 col-md-offset-3 col-xs-10 col-xs-offset-1" type="text" placeholder="Dein Name" />
+        <input id="pw" type="password" class="col-md-6 col-md-offset-3 col-xs-10 col-xs-offset-1" placeholder="Dein Passwort" />
         <input id="send" class="hidden" type="submit" value="send" />
       </form>
+      <p>Zum Userlogin (ohne Anmeldung) geht es <a href="/">HIER</a></p>
     </div>
     <!-- Loginscreen Ende -->
 
     <!-- Chatbereich -->
     <div id="chat" class="hidden">
+      <h1>CoffeeChat <small>einfach & anonym</small></h1>
       <ul id="messages"></ul>
       <div id="footer">
         <form action="" id="chatform" class="form-inline">
           <input id="username" type="text" placeholder="Dein Name" disabled/>
           <input id="message" autocomplete="off" placeholder="Deine Nachricht..."/>
-          <input id="send" type="submit" value="send" />
+          <input id="send" class="btn btn-default" type="submit" value="SENDEN" />
         </form>
         <form action="" id="fileform" class="form-group">
           <button class"btn"><input id="files" type="file" accept="image/*" name="files[]" multiple /></button>
@@ -44,7 +48,11 @@
     </div> <!-- Chatbereich Ende -->
 
     <div id="sidebar" class="hidden">
+      <h3>Userliste</h3>
       <ul id="userlist"></ul>
+      <div id="counter"></div>
+      </br>
+      <h3>Raumliste</h3>
       <ul id="rooms"></ul>
       <form id="room-form" action="" class="form-group">
         <input id="room" type="text" placeholder"Neuen Raum eröffnen..."/>

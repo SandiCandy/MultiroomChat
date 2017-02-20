@@ -38,6 +38,8 @@ http.listen(conf.port, function() {
 
 //Admin-Liste
 admins['Barista'] = 'password';
+admins['Chef'] = 'pw';
+admins['Kellner'] = 'passw0rd';
 
 // tell express where to serve static files from
 app.use(express.static(__dirname + '/public'));
@@ -97,15 +99,15 @@ io.on('connection', function(socket){
     stream.write(new Date() + ': Ein neuer Nutzer hat sich unter den Namen ' + username + ' erfolgreich eingeloggt.\n');
   });
 
-  //Server receive 'login'-Event with String username
+  //Server receive 'admin-login'-Event with String username
   socket.on(conf.command.adminLogin, function(username, pw) {
     console.log('Admin-Login: ' + username + ': ' + pw);
-    if(!admins.hasOwnProperty(username) && admins[username] !== pw) {
+    if(!admins.hasOwnProperty(username) || admins[username] !== pw) {
       return io.to(socket.id).emit(conf.command.loginError, username);
     }
 
     //Admin muss in Nutzerliste eingetragen werden
-    var defaultRoom = chatrooms['Neu bei CoffeeChat'];
+    var defaultRoom = chatrooms[conf.rooms.defaultChat.name];
     var newPerson = {
       username: username,
       room: defaultRoom.name,
@@ -265,7 +267,28 @@ var handleChatcommand = function(message, socket) {
         return io.to(room.users[sid].room).emit(conf.command.chatmessage, {time: new Date(), message: newOwner + ' ist jetzt Raumbesitzer im Raum "' + room.users[sid].room + '".', name: 'INFO'  });
       }
     }
-    return io.to(socket.id).emit(conf.command.chatmessage, {time: new Date(), message: to_remove + ' wurde nicht gefunden.', name: 'INFO'  });
+    return io.to(socket.id).emit(conf.command.chatmessage, {time: new Date(), message: newOwner + ' wurde nicht gefunden.', name: 'INFO'  });
+
+  }
+
+  if (message.startsWith('/ownsNot ')) {
+    if(!admins.hasOwnProperty(user.username)) {
+      console.log('[' + user.room + '] ' + user.username + ' is not a admin and cannot remove other users owner-rights.');
+      return io.to(socket.id).emit(conf.command.chatmessage, {time: new Date(), message: 'Du kannst diesen Befehl nicht benutzen!', name: 'PRIVATE INFO'  });
+    }
+    var oldOwner = message.slice(8).trim();
+    console.log(user.username + ' wants to take the owner-rights from ' + oldOwner);
+
+    for(let sid in room.users) {
+      if(user.username === oldOwner) {
+        return io.to(socket.id).emit(conf.command.chatmessage, {time: new Date(), message: 'Du kannst dir nicht selber Rechte entziehen!', name: 'INFO'  });
+      }
+      if(room.users[sid].username === oldOwner) {
+        room.users[sid].owner = false;
+        return io.to(room.users[sid].room).emit(conf.command.chatmessage, {time: new Date(), message: oldOwner + ' ist jetzt kein Raumbesitzer mehr im Raum "' + room.users[sid].room + '".', name: 'INFO'  });
+      }
+    }
+    return io.to(socket.id).emit(conf.command.chatmessage, {time: new Date(), message: oldOwner + ' wurde nicht gefunden.', name: 'INFO'  });
 
   }
 
@@ -287,7 +310,9 @@ var handleChatcommand = function(message, socket) {
 
 var changeChatroom = function(roomname, socket) {
   var user = users[socket.id];
-  var rname = user.room;
+  console.log(user);
+
+  var rname = user.room || conf.rooms.defaultChat.name;
   var oldRoom = chatrooms[rname];
 
   //User befindet sich bereits in dem Raum
@@ -337,4 +362,5 @@ var changeChatroom = function(roomname, socket) {
     //Array Object.keys(chatrooms)  - all chatrooms,
     //Object chatrooms[roomname]    - the new room
   io.to(roomname).emit(conf.command.changeRoom, user, Object.keys(chatrooms), chatrooms[roomname]);
+
 }

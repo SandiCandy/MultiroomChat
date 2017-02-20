@@ -6,10 +6,11 @@ html, body {
 
 body{
 	margin: 0;
-	padding: 0;
+	padding: 0px;
 	font: 16px "Helvetica neue", Helvetica, Arial, sans-serif;
 	color: #333;
 }
+
 header, footer{
 	display: block;
 	position: fixed;
@@ -24,9 +25,11 @@ header, footer{
 	height: 2em;
 	color: #fff;
 }
+
 header{
 	font-weight: bold;
 }
+
 header > a:last-child{
 	float: right;
 	color: #fff;
@@ -34,11 +37,12 @@ header > a:last-child{
 }
 #chat {
 	height: 100%;
-	max-width: 80%
+	max-width: 80%;
+	padding: 5px;
 }
 
 #footer{
-	height: 18%;
+	height: 19%;
   width: 100%;
   background: #000;
   position: fixed;
@@ -58,14 +62,19 @@ form#chatform {
 	bottom: 5px;
 }
 
+#chatform input {
+	padding: 5px;
+}
+
 form#fileform {
-	bottom: 40px;
+	bottom: 45px;
 	margin-bottom: 0;
 }
 
 form#room-form {
 	font-size: 16px;
 }
+
 
 input[type=file] {
 	display: inline-block;

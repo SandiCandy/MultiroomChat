@@ -1,7 +1,7 @@
 {
   "name": "node_socket_projo",
   "version": "0.0.1",
-  "description": "superchat",
+  "description": "coffee chat - einfach und anonym",
   "main": "app.js",
   "dependencies": {
     "bootstrap": "^3.3.7",

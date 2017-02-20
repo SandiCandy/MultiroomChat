@@ -16,7 +16,7 @@ $('#user-login.loginscreen form').submit(function(){
 });
 
 socket.on('login-error', function(username) {
-  //TODO: Fehlermeldung ausgeben
+  //Fehlermeldung ausgeben
   $('#username').val('');
   $('#nickname').val('');
   if($('#user-login').length) {
@@ -30,7 +30,6 @@ socket.on('login-error', function(username) {
 
 });
 
-//TODO
 //Admin sends the username from the Server as "login"-Event with
 //username - username (String)
 //password
@@ -69,7 +68,7 @@ socket.on('login', function(person, chats, chatroom){
 
   }
 
-  var msg = 'User ' + person.username + ' hat den Chat ' + person.room + ' betreten.'
+  var msg = 'User ' + person.username + ' hat den Chat "' + person.room + '" betreten.'
   $('#messages').append($('<li>').text(msg));
 
 });
@@ -178,12 +177,13 @@ socket.on('change-room', function(person, chats, chatroom){
 
   $('#rooms').empty();
 
-  // Liste mit aktuellen Chats aktualisieren
+  // Liste mit aktuellen Chats aktualisieren bzw. Userliste erneuern
   updateChatList(chats);
   updateUserList(chatroom);
 
 });
 
+/* Ausgelagerte Funktion, in der die Liste der Chaträume erneuert wird */
 var updateChatList = function(chats) {
 
     chats.map(function(chat) {
@@ -199,9 +199,12 @@ var updateChatList = function(chats) {
   });
 };
 
+
+/* Ausgelagerte Funktion, in der die angezeigten Nutzer erneuert wird */
 var updateUserList = function(chatroom) {
     $('#counter').empty();
     $('#userlist').empty();
+    $('#roomname').empty();
     var count = 0;
     for (var id in chatroom.users) {
       var username = chatroom.users[id].username;
@@ -220,5 +223,9 @@ var updateUserList = function(chatroom) {
       count++;
     }
 
-    $('#counter').append($('<span>', {html: count + ' User anwesend'}))
+    $('#counter').append($('<span>', {html: count + ' User anwesend'}));
+    $('#roomname').prepend($('<h3>', {html: chatroom.name}));
+    if(!chatroom.public) {
+      $('#roomname').append($('<p>', {html: '(privater Chat)'}));
+    }
 };

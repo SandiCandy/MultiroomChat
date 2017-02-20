@@ -25,7 +25,7 @@ http.listen(conf.port, function() {
   console.log('listening on *:' + conf.port);
   console.log('Chaträume werden konfiguriert...');
   var rooms = conf.rooms;
-  for(let key in rooms) {
+  for(var key in rooms) {
     chatrooms[rooms[key].name] = {
       name: rooms[key].name,
       public: rooms[key].public,
@@ -63,7 +63,7 @@ io.on('connection', function(socket){
   //Server receive 'login'-Event with String username
   socket.on(conf.command.login, function(username) {
     //Checken, ob username schon vergeben ist
-    for(let sid in users){
+    for(var sid in users){
       if(users[sid].username === username) {
         return io.to(socket.id).emit(conf.command.loginError, username);
       }
@@ -161,7 +161,7 @@ io.on('connection', function(socket){
   //Austragen aus Nutzerliste
   //Raum löschen, wenn leer
   socket.on('disconnect', function(){
-    let user = users[socket.id];
+    var user = users[socket.id];
     if(user) {
       console.log(socket.id + ' :User ' + user.username + 'left the chat.');
       stream.write(new Date() + ': Der User mit dem Namen ' + user.username + ' hat den Chat verlassen.\n');
@@ -176,7 +176,7 @@ io.on('connection', function(socket){
 
 // Prüfe, ob ein Raum leer ist und gelöscht werden darf
 var updateRoomlist = function(roomname) {
-  let room = chatrooms[roomname];
+  var room = chatrooms[roomname];
   if(Object.keys(room.users).length === 0 && roomname !== 'Neu bei CoffeeChat' && roomname !== 'Osnabrück und Umgebung' && roomname !== 'Professorentreff' && roomname !== 'Studententreff') {
     console.log(roomname + ' was empty. DELETED.');
     delete chatrooms[roomname];
@@ -235,7 +235,7 @@ var handleChatcommand = function(message, socket) {
     var to_remove = message.slice(7).trim();
     console.log(user.username + ' wants to remove ' + to_remove);
 
-    for(let sid in room.users) {
+    for(var sid in room.users) {
       if(user.username === to_remove) {
         return io.to(socket.id).emit(conf.command.chatmessage, {time: new Date(), message: 'Du kannst dich nicht selber entfernen!', name: 'PRIVATE INFO'  });
       }
@@ -258,7 +258,7 @@ var handleChatcommand = function(message, socket) {
     var newOwner = message.slice(5).trim();
     console.log(user.username + ' wants to give ' + newOwner + ' owner-rights.');
 
-    for(let sid in room.users) {
+    for(var sid in room.users) {
       if(user.username === newOwner) {
         return io.to(socket.id).emit(conf.command.chatmessage, {time: new Date(), message: 'Du bist schon Raumbesitzer!', name: 'INFO'  });
       }
@@ -279,7 +279,7 @@ var handleChatcommand = function(message, socket) {
     var oldOwner = message.slice(8).trim();
     console.log(user.username + ' wants to take the owner-rights from ' + oldOwner);
 
-    for(let sid in room.users) {
+    for(var sid in room.users) {
       if(user.username === oldOwner) {
         return io.to(socket.id).emit(conf.command.chatmessage, {time: new Date(), message: 'Du kannst dir nicht selber Rechte entziehen!', name: 'INFO'  });
       }

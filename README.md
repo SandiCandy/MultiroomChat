@@ -1,4 +1,4 @@
-# Fertig #
+# Features #
 
 * mehrere Räume
 * wechseln zwischen Räumen
@@ -6,14 +6,23 @@
 * Bilder und Nachrichten versenden
 * leere Räume löschen
 * User schließt Fenster: User wird gelöscht
+* Unterschiedliche Rollen: Administrator, Raumbesitzer, normaler Nutzer
+* Defaulträume - existieren immer, auch wenn diese leer sind (siehe config.json)
 
-# Todo #
+# Start #
 
-* Administrator
-* Leute in private Räume einladen?
-* weitere Features (flüstern?)
-* aktuelle Nutzer anzeigen/updaten
-* Registrieren?
+Voraussetzung: Node.js + NPM installiert (Version prüfen über node -v bzw. npm -v)
 
-* Dokumentation
-* App?
+1. Abhängigkeiten updaten: "npm install"
+2. Server starten: "node app.js"
+3. Aufruf im Browser: "localhost:3000"        (Standard)
+                bzw.: "localhost:3000/login"  (Adminlogin)
+
+# Sonderbefehle #
+* "/help" (Liste von Sonderbefehlen)
+* "/lock" (Raum als privat setzen)
+* "/unlock" (Raum als öffentlich setzen)
+* "/remove <username>" (User aus einem Raum entfernen)
+* "/all <nachricht>" (Admindurchsage an alle User in allen Räumen)
+* "/owns <username>" (User zum Raumbesitzer ernennen)
+* "/ownsNot <username>" (User die Raumbesitzer-Rechte entziehen)

@@ -1,7 +1,7 @@
 {
-  "name": "node_socket_projo",
-  "version": "0.0.1",
-  "description": "coffee chat - einfach und anonym",
+  "name": "Coffeechat",
+  "version": "1.0.0",
+  "description": "Multi rooms, different messages, different user roles",
   "main": "app.js",
   "dependencies": {
     "bootstrap": "^3.3.7",
@@ -14,5 +14,9 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Sandra Tieben",
-  "license": "ISC"
+  "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/SandiCandy/MultiroomChat.git"
+  }
 }

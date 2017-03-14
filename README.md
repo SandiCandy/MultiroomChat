@@ -1,3 +1,12 @@
+# Start #
+
+Voraussetzung: Node.js + NPM installiert (Version prüfen über node -v bzw. npm -v)
+
+1. Abhängigkeiten updaten: "npm install"
+2. Server starten: "node app.js"
+3. Aufruf im Browser: "localhost:3000"        (Standard)
+                bzw.: "localhost:3000/login"  (Adminlogin)
+
 # Features #
 
 * mehrere Räume
@@ -9,14 +18,6 @@
 * Unterschiedliche Rollen: Administrator, Raumbesitzer, normaler Nutzer
 * Defaulträume - existieren immer, auch wenn diese leer sind (siehe config.json)
 
-# Start #
-
-Voraussetzung: Node.js + NPM installiert (Version prüfen über node -v bzw. npm -v)
-
-1. Abhängigkeiten updaten: "npm install"
-2. Server starten: "node app.js"
-3. Aufruf im Browser: "localhost:3000"        (Standard)
-                bzw.: "localhost:3000/login"  (Adminlogin)
 
 # Sonderbefehle #
 * "/help" (Liste von Sonderbefehlen)
